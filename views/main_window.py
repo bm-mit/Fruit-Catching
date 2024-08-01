@@ -1,11 +1,14 @@
 import typing
+from random import randint
 
 import cv2
 import mediapipe
 import pygame
 
 from config import *
-from views.point import show_point
+from utils import get_time, distance
+from views.fruit import Fruit
+from views.text import show_text
 
 mp_hands = mediapipe.solutions.hands
 mp_drawing = mediapipe.solutions.drawing_utils
@@ -21,6 +24,10 @@ class MainWindow:
         pygame.display.set_caption(WINDOW_TITLE)
 
         self.point = 0
+        self.time = PLAYTIME
+        self.last_tick = 0
+        self.last_move = 0
+        self.fruits = [0] * MAX_FRUIT
         self.screen = pygame.display.set_mode(SCREEN_DIMENSIONS, pygame.RESIZABLE)
         self.camera = cv2.VideoCapture(0)
         self.hand_rect = pygame.Rect(0, 0, 50, 50)
@@ -35,7 +42,24 @@ class MainWindow:
         self.screen.fill([0, 0, 0])
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = cv2.resize(frame, self.screen.get_size())
-        show_point(frame, self.point)
+
+        if get_time() - self.last_tick >= 1 and self.time > 0:
+            self.last_tick = get_time()
+            self.time -= 1
+
+        for i in range(len(self.fruits)):
+            if self.fruits[i] == 0:
+                if randint(0, SPAWN_RATE) == 1:
+                    self.fruits[i] = Fruit(frame, randint(100, frame.shape[1] - 100), 100)
+            else:
+                self.fruits[i] = Fruit(frame, self.fruits[i].x, self.fruits[i].y + SPEED)
+                if self.fruits[i].y > frame.shape[0] - 100:
+                    self.fruits[i] = 0
+            if self.fruits[i]:
+                self.fruits[i] = Fruit(frame, self.fruits[i].x, self.fruits[i].y)
+
+        show_text(frame, str(self.point), (frame.shape[1] - 100 * len(str(self.point)), frame.shape[0] - 125))
+        show_text(frame, str(self.time), (30, frame.shape[0] - 125))
 
         if DEBUG:
             self.draw_hand_connections(frame)
@@ -65,3 +89,10 @@ class MainWindow:
 
                 x_tip, y_tip = int(middle_tip.x * window_width), int(middle_tip.y * window_height)
                 x_mcp, y_mcp = int(middle_mcp.x * window_width), int(middle_mcp.y * window_height)
+
+                if self.time > 0:
+                    for i in range(MAX_FRUIT):
+                        if self.fruits[i] and distance(x_mcp, y_mcp, self.fruits[i].x,
+                                                       self.fruits[i].y) <= CATCH_DISTANCE:
+                            self.fruits[i] = 0
+                            self.point += 1

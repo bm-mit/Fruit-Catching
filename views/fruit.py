@@ -3,7 +3,7 @@ import numpy as np
 
 
 class Fruit:
-    def __init__(self, parent_frame):
+    def __init__(self, parent_frame, x, y):
         self.image = cv2.imread('assets/apple.png')
         self.image = cv2.resize(self.image, (200, 200))
 
@@ -18,9 +18,13 @@ class Fruit:
 
         self.mask_inv = cv2.bitwise_not(self.mask)
 
-        self.set_pos(10, 10)
+        self.x = x
+        self.y = y
+
+        self.set_pos(x, y)
 
     def set_pos(self, x, y):
+
         x -= self.width // 2
         y -= self.height // 2
 
@@ -36,3 +40,6 @@ class Fruit:
             self.parent_frame[y:y + self.height, x:x + self.width] = result
         except:
             return
+
+    def move_down(self):
+        self.set_pos(self.x, self.y + 2)

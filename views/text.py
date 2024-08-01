@@ -2,13 +2,13 @@ import cv2
 import numpy as np
 
 
-def show_point(frame, point):
+def show_text(frame, point, pos):
     text = str(point)
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 4
     font_thickness = 5
     position = (0, 0)
-    text_pos = (30, 30)
+    text_pos = pos
     text_color = (255, 0, 0)
 
     text_img = np.zeros_like(frame)
@@ -30,11 +30,7 @@ def show_point(frame, point):
 
     x, y = position
     h, w = flipped_text_img.shape[:2]
-
-    if x + w > frame.shape[1] or y + h > frame.shape[0]:
-        print("Error: Text position exceeds frame boundaries.")
-        return frame
-
+    
     roi = frame[y:y + h, x:x + w]
 
     roi_bg = cv2.bitwise_and(roi, roi, mask=cv2.bitwise_not(mask))
