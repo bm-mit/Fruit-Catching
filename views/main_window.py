@@ -5,7 +5,7 @@ import mediapipe
 import pygame
 
 from config import *
-from models.fruit import Fruit
+from views.point import show_point
 
 mp_hands = mediapipe.solutions.hands
 mp_drawing = mediapipe.solutions.drawing_utils
@@ -20,6 +20,7 @@ class MainWindow:
         pygame.init()
         pygame.display.set_caption(WINDOW_TITLE)
 
+        self.point = 0
         self.screen = pygame.display.set_mode(SCREEN_DIMENSIONS, pygame.RESIZABLE)
         self.camera = cv2.VideoCapture(0)
         self.hand_rect = pygame.Rect(0, 0, 50, 50)
@@ -34,8 +35,7 @@ class MainWindow:
         self.screen.fill([0, 0, 0])
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = cv2.resize(frame, self.screen.get_size())
-
-        Fruit(frame)
+        show_point(frame, self.point)
 
         if DEBUG:
             self.draw_hand_connections(frame)
@@ -65,5 +65,3 @@ class MainWindow:
 
                 x_tip, y_tip = int(middle_tip.x * window_width), int(middle_tip.y * window_height)
                 x_mcp, y_mcp = int(middle_mcp.x * window_width), int(middle_mcp.y * window_height)
-
-                cv2.rectangle(frame, (x_tip - 25, y_tip - 25), (x_tip + 25, y_tip + 25), (0, 255, 0), 5)
