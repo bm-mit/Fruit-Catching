@@ -4,8 +4,8 @@ import cv2
 import mediapipe
 import pygame
 
-import utils
 from config import *
+from models.fruit import Fruit
 
 mp_hands = mediapipe.solutions.hands
 mp_drawing = mediapipe.solutions.drawing_utils
@@ -22,6 +22,7 @@ class MainWindow:
 
         self.screen = pygame.display.set_mode(SCREEN_DIMENSIONS, pygame.RESIZABLE)
         self.camera = cv2.VideoCapture(0)
+        self.hand_rect = pygame.Rect(0, 0, 50, 50)
         self.hands = mp_hands.Hands(static_image_mode=False,
                                     max_num_hands=2,
                                     min_detection_confidence=0.7,
@@ -34,9 +35,11 @@ class MainWindow:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = cv2.resize(frame, self.screen.get_size())
 
+        Fruit(frame)
+
         if DEBUG:
             self.draw_hand_connections(frame)
-        self.check_hand_close()
+        self.check_hand_close(frame)
 
         frame_surface = pygame.surfarray.make_surface(frame)
         self.screen.blit(pygame.transform.rotate(frame_surface, -90), (0, 0))
@@ -49,26 +52,18 @@ class MainWindow:
             for hand_landmarks in self.result.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
-    def check_hand_close(self):
+    def check_hand_close(self, frame):
         multi_hand_landmarks = self.result.multi_hand_landmarks
 
         window_size = self.screen.get_size()
+        window_width, window_height = window_size
 
         if multi_hand_landmarks:
             for hand_landmarks in multi_hand_landmarks:
                 middle_tip = hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP]
                 middle_mcp = hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_MCP]
 
-                x_tip, y_tip = middle_tip.x * window_size[0], middle_tip.y * window_size[1]
-                x_mcp, y_mcp = middle_mcp.x * window_size[0], middle_mcp.y * window_size[1]
+                x_tip, y_tip = int(middle_tip.x * window_width), int(middle_tip.y * window_height)
+                x_mcp, y_mcp = int(middle_mcp.x * window_width), int(middle_mcp.y * window_height)
 
-                distance = utils.distance(x_tip, y_tip, x_mcp, y_mcp)
-
-                if DEBUG:
-                    print(x_tip, y_tip, x_mcp, y_mcp)
-                    print(distance)
-
-                    if y_tip > y_mcp:
-                        print("hand closed")
-                    else:
-                        print("hand not closed")
+                cv2.rectangle(frame, (x_tip - 25, y_tip - 25), (x_tip + 25, y_tip + 25), (0, 255, 0), 5)
