@@ -5,7 +5,7 @@ import numpy as np
 class Fruit:
     def __init__(self, parent_frame, x, y):
         self.image = cv2.imread('assets/apple.png')
-        self.image = cv2.resize(self.image, (200, 200))
+        self.image = cv2.resize(self.image, (100, 100))
 
         self.height, self.width = self.image.shape[:2]
         self.parent_frame = parent_frame

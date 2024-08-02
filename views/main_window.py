@@ -30,11 +30,15 @@ class MainWindow:
         self.fruits = [0] * MAX_FRUIT
         self.screen = pygame.display.set_mode(SCREEN_DIMENSIONS, pygame.RESIZABLE)
         self.camera = cv2.VideoCapture(0)
+        self.camera.set(cv2.CAP_PROP_FPS, 120)
         self.hand_rect = pygame.Rect(0, 0, 50, 50)
         self.hands = mp_hands.Hands(static_image_mode=False,
                                     max_num_hands=2,
                                     min_detection_confidence=0.7,
                                     model_complexity=1)
+        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        self.count = 0
 
     def update(self):
         ret, frame = self.camera.read()
@@ -50,7 +54,8 @@ class MainWindow:
         for i in range(len(self.fruits)):
             if self.fruits[i] == 0:
                 if randint(0, SPAWN_RATE) == 1:
-                    self.fruits[i] = Fruit(frame, randint(100, frame.shape[1] - 100), 100)
+                    self.count += int(self.time > 0)
+                    self.fruits[i] = Fruit(frame, randint(100, frame.shape[1] - 100), 50)
             else:
                 self.fruits[i] = Fruit(frame, self.fruits[i].x, self.fruits[i].y + SPEED)
                 if self.fruits[i].y > frame.shape[0] - 100:
@@ -81,6 +86,8 @@ class MainWindow:
 
         window_size = self.screen.get_size()
         window_width, window_height = window_size
+        if self.time < 1:
+            show_text(frame, f"{(self.point/self.count) * 100:.2f}%", (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 50))
 
         if multi_hand_landmarks:
             for hand_landmarks in multi_hand_landmarks:
