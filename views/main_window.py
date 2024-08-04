@@ -87,7 +87,7 @@ class MainWindow:
         window_size = self.screen.get_size()
         window_width, window_height = window_size
         if self.time < 1:
-            show_text(frame, f"{(self.point/self.count) * 100:.2f}%", (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 50))
+            show_text(frame, f"{(self.point/self.count) * 100:.2f}%", (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2 - 50))
 
         if multi_hand_landmarks:
             for hand_landmarks in multi_hand_landmarks:
